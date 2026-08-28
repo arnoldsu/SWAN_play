@@ -1,0 +1,24 @@
+# Downloaded third-party source trees and archives
+swan4151/
+swan4151.tar.gz
+ROMS/roms/
+ROMS/roms_test/
+
+# Generated model output
+playground01/bottom.bot
+playground01/Errfile
+playground01/PRINT
+playground01/norm_end
+playground01/swan_output.dat
+playground01/*.png
+
+# Local/legacy helper scripts superseded by scripts/
+fix_and_rerun.sh
+rerun_playground01.sh
+run_swan_playground01.sh
+
+# Python and editor files
+__pycache__/
+*.py[cod]
+*~
+
