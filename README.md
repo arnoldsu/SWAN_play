@@ -157,9 +157,9 @@ as an independent-output diagnostic because the present standalone builds do
 not exchange fields. For regional wind-wave coupling use **SWAN**; use SWASH
 for short-scale non-hydrostatic surf-zone, harbour, or overtopping studies.
 
-## 6. 如何运行 ROMS + SWAN 联合演示
+## 6. Run the ROMS + SWAN joint demonstration
 
-### 6.1 一次完成全部运行
+### 6.1 Run the complete workflow
 
 ```bash
 cd /scratch/p66/ars599/SWAN_play
@@ -168,11 +168,12 @@ cd /scratch/p66/ars599/SWAN_play
 ./scripts/run_roms_swan_animation.sh
 ```
 
-三个命令依次创建并运行 SWAN 理想海岸算例、运行 ROMS 官方 Upwelling
-算例 1 个模拟日，以及读取两边的真实输出制作联合 GIF。如果模型结果已经
-存在，只需执行最后一个命令即可重新绘制动画。
+These commands create and run the idealized SWAN coastal case, run the
+official ROMS Upwelling case for one simulated day, and read both real model
+outputs to create the joint GIF. If the model outputs already exist, run only
+the final command to regenerate the animation.
 
-### 6.2 运行前检查
+### 6.2 Pre-run checks
 
 ```bash
 test -x swan4151/swan.exe
@@ -181,70 +182,85 @@ test -s playground01/swan_output.dat
 test -s ROMS/roms_test/upwelling/roms_his.nc
 ```
 
-如果可执行文件不存在，先按照第 1 节和第 3 节执行安装脚本。
+If either executable is missing, first follow the installation procedures in
+Sections 1 and 3.
 
-### 6.3 成功标志与结果
+### 6.3 Success checks and outputs
 
 ```bash
 grep 'accuracy OK in 100.00' playground01/PRINT
 grep 'ROMS: DONE' ROMS/roms_test/upwelling/roms_run.log
 ```
 
-| 文件 | 内容 |
+| File | Contents |
 |---|---|
-| `playground01/swan_output.dat` | SWAN 水深、有效波高、周期和波向 |
-| `ROMS/roms_test/upwelling/roms_his.nc` | ROMS 水位、三维流速和水文变量 |
-| `figures/SWAN_wave_height.png` | SWAN 有效波高平面图 |
-| `figures/ROMS_upwelling_summary.png` | ROMS 最终状态摘要 |
-| `figures/ROMS_SWAN_joint_diagnostic.gif` | 流场、风应力方向和波场联合动画 |
+| `playground01/swan_output.dat` | SWAN depth, significant wave height, period, and direction |
+| `ROMS/roms_test/upwelling/roms_his.nc` | ROMS sea level, 3-D velocity, and hydrographic variables |
+| `figures/SWAN_wave_height.png` | SWAN significant-wave-height map |
+| `figures/ROMS_upwelling_summary.png` | ROMS final-state summary |
+| `figures/ROMS_SWAN_joint_diagnostic.gif` | Joint current, wind-stress, and wave animation |
 
-## 7. 运行概念
+## 7. Running concept
 
-### 7.1 理想海岸与物理过程
+### 7.1 Idealized coast and physical processes
 
-SWAN 使用 100 km × 50 km 的规则区域，水深从西侧外海的 50 m 逐渐
-减小到东侧海岸的 2 m。西边界输入 JONSWAP 波谱（Hs=2 m、Tp=8 s），
-SWAN 计算传播、浅化、破碎和底摩擦引起的波浪变化。
+SWAN uses a 100 km by 50 km regular domain. Water depth decreases from 50 m
+at the western offshore boundary to 2 m at the eastern coast. A JONSWAP
+spectrum with Hs=2 m and Tp=8 s enters through the western boundary. SWAN
+calculates changes caused by propagation, shoaling, breaking, and bottom
+friction.
 
-ROMS 使用官方 Upwelling 理想算例。解析沿岸风应力驱动表层流和跨岸
-输运，模型计算随时间变化的海面高度、流速、温盐和生物地球化学变量。
-当前历史文件包含 0、6、12、18 和 24 小时共 5 个动画时刻。
+ROMS uses the official idealized Upwelling case. Analytical alongshore wind
+stress drives the surface current and cross-shore transport. The model
+calculates time-dependent sea level, velocity, temperature, salinity, and
+biogeochemical variables. The current history file contains five animation
+times: 0, 6, 12, 18, and 24 hours.
 
-联合 GIF 中：
+In the joint GIF:
 
-- ROMS 面板颜色为海面高度，彩色箭头为表层流向和相对流速；
-- 洋红箭头为规定的沿岸风应力方向。历史文件没有保存 10 m 风速，因此
-  箭头长度不代表实际风速；
-- SWAN 面板颜色为有效波高 `Hs`，橙色箭头为波浪传播方向；
-- 白色移动波峰只是动画提示；本次 SWAN 结果是稳态解。
+- Colors in the ROMS panel show sea level; colored arrows show surface-current
+  direction and relative speed.
+- Magenta arrows show the prescribed alongshore wind-stress direction. The
+  history file does not contain 10 m wind speed, so arrow length must not be
+  interpreted as wind speed.
+- Colors in the SWAN panel show significant wave height (`Hs`); orange arrows
+  show the direction of wave propagation.
+- Moving white crests are an animation cue only; the SWAN solution is
+  stationary.
 
-### 7.2 当前状态与真正耦合
+### 7.2 Current status and true coupling
 
-当前工作流真实运行了 ROMS 和 SWAN，但它们是使用不同网格的两个独立
-算例，运行期间没有交换变量。联合 GIF 用于确认两个模型及其输出正常，
-不能作为双向耦合验证。
+The workflow runs real ROMS and SWAN simulations, but they are independent
+cases on different grids and do not exchange fields during execution. The
+joint GIF verifies that both models and their outputs work; it is not evidence
+of two-way coupling.
 
-真正的双向耦合应使用 COAWST：
+True two-way coupling should use COAWST:
 
 ```text
-大气强迫 ──> ROMS ──水位、流速、水深──> SWAN
-               ^                         |
-               └──波高、周期、波向、波浪力──┘
+Atmospheric forcing --> ROMS --sea level, currents, depth--> SWAN
+                         ^                                  |
+                         +--wave height, period, direction--+
 ```
 
-每个耦合间隔中，ROMS 先更新水位和流场；耦合器将它们插值到 SWAN
-网格；SWAN 更新波谱；然后把波高、周期、方向和波浪力返回 ROMS。
-下一步应先运行 COAWST 官方 Inlet Test，再换成目标海岸线、水深、潮汐、
-气象、海洋边界和外海波谱。
+During every coupling interval, ROMS updates sea level and currents; the
+coupler interpolates those fields onto the SWAN grid; SWAN updates the wave
+spectrum; and wave height, period, direction, and wave forces are returned to
+ROMS. The next step is to run the official COAWST Inlet Test, then replace its
+inputs with the target coastline, bathymetry, tides, atmospheric forcing,
+ocean boundaries, and offshore wave spectra.
 
-### 7.3 SWAN 还是 SWASH
+### 7.3 SWAN or SWASH?
 
-本项目应选择 **SWAN**。它是相位平均波谱模型，适合公里级区域风浪和
-波流耦合，并有成熟的 COAWST ROMS–SWAN 接口。
+Use **SWAN** for this project. It is a phase-averaged spectral wave model
+suited to regional kilometre-scale wind waves and wave-current interaction,
+and it has a mature COAWST ROMS-SWAN coupling interface.
 
-SWASH 是非静水、波相解析模型，适合小区域的单个波浪、碎波、港池振荡、
-越浪和淹没，时空分辨率和计算成本显著更高，不能直接替代这里的区域
-ROMS–SWAN 耦合方案。
+SWASH is a non-hydrostatic, phase-resolving model suited to individual waves,
+breaking, harbour oscillations, overtopping, and inundation in much smaller
+domains. Its spatial and temporal resolution requirements are substantially
+higher, and it is not a direct replacement for this regional ROMS-SWAN
+coupling workflow.
 
 ## Reproducibility checks
 
