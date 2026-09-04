@@ -1,0 +1,38 @@
+$ ============================================================
+$ SIMPLE SWAN COASTAL WAVE EXPERIMENT
+$ offshore -> coast
+$ Hs = 2 m
+$ Tp = 8 s
+$ ============================================================
+
+PROJECT 'PLAY01' '01'
+
+MODE STAT
+COORD CART
+
+$ Computational grid
+CGRID REGULAR 0 0 0 100000 50000 100 50 &
+CIRCLE 36 0.04 1.0 25
+
+$ Bathymetry
+INPGRID BOTTOM REGULAR 0 0 0 100 50 1000 1000
+READINP BOTTOM 1 'bottom.bot' 1 0 FREE
+
+$ Offshore wave boundary
+BOUND SHAPESPEC JONSWAP PEAK DSPR DEGREES
+BOUNDSPEC SIDE W CCW CONSTANT PAR 2.0 8.0 270.0 25.0
+
+$ Physics
+$ No local wind is prescribed, so wind-wave quadruplet interactions are disabled.
+OFF QUAD
+BREAKING
+FRICTION JONSWAP
+
+$ Output
+FRAME 'GRID' 0 0 0 100000 50000 100 50
+
+TABLE 'GRID' NOHEAD 'swan_output.dat' &
+XP YP DEP HSIGN RTP DIR
+
+COMPUTE
+STOP
